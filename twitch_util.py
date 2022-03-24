@@ -13,7 +13,7 @@ def check_user_online(username=os.environ.get("USERNAME")):
         #if no ongoing streams
         if(len(resp.data) == 0):
             return None
-        #otherwise return, gam
+        #otherwise return data
         return resp.data
     except:
         return None

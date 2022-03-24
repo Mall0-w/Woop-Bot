@@ -19,3 +19,9 @@ def format_list_of_users(user_list):
         return format_string
     except:
         return ""
+
+def get_twitch_announcements(guild):
+    for channel in guild.channels:
+        if channel.name == 'twitch-announcements':
+            return channel
+    return None

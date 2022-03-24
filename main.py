@@ -3,12 +3,25 @@ import discord
 import os
 from twitch_util import check_user_online
 import util
+from discord.ext import commands, tasks
+import sys
 
 client = discord.Client()
+
+notif_sent_out = False
 
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
+    send_twitch_notif.start()
+
+
+@client.event
+async def on_guild_join(guild):
+    for channel in guild.channels:
+        if channel.name == 'twitch-announcements':
+            return
+    await guild.create_text_channel('twitch-announcements')
 
 @client.event
 async def on_message(message):
@@ -17,12 +30,14 @@ async def on_message(message):
         return
 
     if message.content.startswith('$test'):
+        print("TESTING IN $test")
         data = check_user_online()
         if(data):
             await message.channel.send('{} is live and playing {}! Check them out! https://twitch.tv/{}'.format(data.user_name,data.game_name,data.user_name))
         else:
             #take out when actually set up interval to check twitch api
             await message.channel.send('No data found!')
+            
 
     if message.content.startswith('$hydropump'):
         if any(role.permissions.kick_members for role in message.author.roles):
@@ -36,6 +51,30 @@ async def on_message(message):
         else:
             await message.channel.send("Wooper says you must be able to kick members to use this command!\nhttps://media0.giphy.com/media/tRUtppFnqVGzC/giphy.gif")
 
-         
+
+@tasks.loop(minutes=5)
+async def send_twitch_notif():
+    print('test', len(client.guilds))
+    for guild in client.guilds:
+        try:
+            data = check_user_online()
+            if(data and not notif_sent_out):
+                print('data found')
+                await util.get_twitch_announcements(guild).send(
+                    '@everyone {} is live and playing {}! Check them out! https://twitch.tv/{}'.format(data.user_name,data.game_name,data.user_name))
+                notif_sent_out = True
+
+            elif (not data and notif_sent_out):
+                notif_sent_out = False
+                await util.get_twitch_announcements(guild).send(
+                'Wooper would like to say thank you to everyone who joined the stream!')
+            # else:
+            #     print('no data found')
+            #     print('test again')
+            #     print(util.get_twitch_announcements(guild))
+            #     await util.get_twitch_announcements(guild).send(
+            #         'no stream atm :(')
+        except Exception as e:
+            print(str(e), file=sys.stderr)
 
 client.run(os.getenv('TOKEN'))
