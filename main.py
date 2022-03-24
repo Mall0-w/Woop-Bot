@@ -1,5 +1,7 @@
+from tabnanny import check
 import discord
 import os
+from twitch_util import check_user_online
 import util
 
 client = discord.Client()
@@ -15,7 +17,8 @@ async def on_message(message):
         return
 
     if message.content.startswith('$test'):
-        await message.channel.send('test!')
+        data = check_user_online()
+        message.channel.send('{} is live and playing {}! Check them out! https://twitch.tv/{}'.format(data.user_name,data.game_name,data.user_name))
 
     if message.content.startswith('$hydropump'):
         if any(role.permissions.kick_members for role in message.author.roles):
