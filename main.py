@@ -13,6 +13,7 @@ notif_sent_out = False
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
+    notif_sent_out = False
     send_twitch_notif.start()
 
 
@@ -37,6 +38,23 @@ async def on_message(message):
         else:
             #take out when actually set up interval to check twitch api
             await message.channel.send('No data found!')
+    
+    if message.content.startswith('$woop woop'):
+        for guild in client.guilds:
+            try:
+                data = check_user_online()
+                if(data):
+                    print('data found')
+                    await util.get_twitch_announcements(guild).send(
+                        '@everyone {} is live and playing {}! Check them out! https://twitch.tv/{}'.format(data.user_name,data.game_name,data.user_name))
+                else:
+                    await util.get_twitch_announcements(guild).send(
+                        'No Stream right now :('
+                    )
+            except Exception as e:
+                print(str(e), file=sys.stderr)
+
+
             
 
     if message.content.startswith('$hydropump'):
@@ -52,11 +70,12 @@ async def on_message(message):
             await message.channel.send("Wooper says you must be able to kick members to use this command!\nhttps://media0.giphy.com/media/tRUtppFnqVGzC/giphy.gif")
 
 
-@tasks.loop(minutes=5)
+@tasks.loop(minutes=1)
 async def send_twitch_notif():
     print('test', len(client.guilds))
     for guild in client.guilds:
         try:
+            global notif_sent_out
             data = check_user_online()
             if(data and not notif_sent_out):
                 print('data found')
