@@ -1,10 +1,18 @@
 import discord
 import os
 
-client= discord.Client()
+client = discord.Client()
 
 @client.event
 async def on_ready():
-    print("Hi there! Im tallyBot, you can learn more about me by using $thelp")
+    print('We have logged in as {0.user}'.format(client))
 
-client.run(os.getenv('Token'))
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+
+    if message.content.startswith('$test'):
+        await message.channel.send('test!')
+
+client.run(os.getenv('TOKEN'))
