@@ -1,0 +1,10 @@
+version: '3.3'
+services:
+  
+  server: 
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: woop-woop
+    env_file:
+      - .env
