@@ -8,9 +8,12 @@ twitch = Twitch(os.environ.get("TWITCH_CLIENT_ID"), os.environ.get("TWITCH_CLIEN
 twitch.authenticate_app([])
 
 def check_user_online(username=os.environ.get("USERNAME")):
-    resp = twitch.get_streams(user_login=[username])
-    #if no ongoing streams
-    if(len(resp.data) == 0):
+    try:
+        resp = twitch.get_streams(user_login=[username])
+        #if no ongoing streams
+        if(len(resp.data) == 0):
+            return None
+        #otherwise return, gam
+        return resp.data
+    except:
         return None
-    #otherwise return, gam
-    return resp.data

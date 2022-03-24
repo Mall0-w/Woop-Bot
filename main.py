@@ -18,7 +18,11 @@ async def on_message(message):
 
     if message.content.startswith('$test'):
         data = check_user_online()
-        message.channel.send('{} is live and playing {}! Check them out! https://twitch.tv/{}'.format(data.user_name,data.game_name,data.user_name))
+        if(data):
+            await message.channel.send('{} is live and playing {}! Check them out! https://twitch.tv/{}'.format(data.user_name,data.game_name,data.user_name))
+        else:
+            #take out when actually set up interval to check twitch api
+            await message.channel.send('No data found!')
 
     if message.content.startswith('$hydropump'):
         if any(role.permissions.kick_members for role in message.author.roles):
